@@ -7,7 +7,7 @@ import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 
-public class VertexBuffer implements IOpenGLBuffer {
+public class Shape implements IOpenGLBuffer {
     private final int stride;
     private float[]   data;
     private short[]   elements;
@@ -15,13 +15,13 @@ public class VertexBuffer implements IOpenGLBuffer {
     private int       elementBufferIndex;
     private int       vertexArrayIndex;
 
-    public VertexBuffer( int stride, int rows ) {
+    public Shape( int stride, int rows ) {
         super();
         this.stride = stride;
         this.data = new float[ stride * rows ];
     }
 
-    public VertexBuffer( int stride ) {
+    public Shape( int stride ) {
         super();
         this.stride = stride;
     }
@@ -61,9 +61,9 @@ public class VertexBuffer implements IOpenGLBuffer {
     public void use( GL3 gl ) {
         gl.glBindVertexArray( vertexArrayIndex );
         gl.glDrawArrays( GL.GL_TRIANGLES, 0, stride );
-//        gl.glBindVertexArray( 0 );
+        // gl.glBindVertexArray( 0 );
     }
-    
+
     public int getBufferIndex() {
         return vertexBufferIndex;
     }
@@ -84,7 +84,7 @@ public class VertexBuffer implements IOpenGLBuffer {
         return data;
     }
 
-    public VertexBuffer setData( float[] data ) {
+    public Shape setData( float[] data ) {
         this.data = data;
         return this;
     }
@@ -93,7 +93,7 @@ public class VertexBuffer implements IOpenGLBuffer {
         return elements;
     }
 
-    public VertexBuffer setElements( short[] elements ) {
+    public Shape setElements( short[] elements ) {
         this.elements = elements;
         return this;
     }

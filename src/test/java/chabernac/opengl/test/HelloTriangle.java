@@ -1,6 +1,5 @@
 package chabernac.opengl.test;
 
-
 import com.jogamp.newt.event.WindowAdapter;
 import com.jogamp.newt.event.WindowEvent;
 import com.jogamp.newt.opengl.GLWindow;
@@ -15,7 +14,7 @@ import com.jogamp.opengl.util.Animator;
 import chabernac.opengl.Buffers;
 import chabernac.opengl.ShaderProgram;
 import chabernac.opengl.ShaderProgram.ShaderType;
-import chabernac.opengl.VertexBuffer;
+import chabernac.opengl.Shape;
 
 public class HelloTriangle implements GLEventListener {
     private ShaderProgram shaderProgram;
@@ -49,7 +48,7 @@ public class HelloTriangle implements GLEventListener {
         gl.glEnable( GL3.GL_DEPTH_TEST );
 
         buffers = new Buffers()
-            .addBuffer( new VertexBuffer( 3 )
+            .addBuffer( new Shape( 3 )
                 .setData( new float[] {
                                         -0.5f, -0.5f, 0.0f,
                                         0.5f, -0.5f, 0.0f,
@@ -66,7 +65,9 @@ public class HelloTriangle implements GLEventListener {
                 getClass().getResourceAsStream( "/shaders/hello-triangle.frag" ),
                 ShaderType.FRAGMENT,
                 "fragmentShader" )
-            .attachAllShaders();
+            .attachAllShaders()
+            .use()
+            .uniform( "color", 0, 1, 0, 1 );
         shaderProgram.use();
     }
 
@@ -89,13 +90,13 @@ public class HelloTriangle implements GLEventListener {
         window.addGLEventListener( l );
         window.setSize( 400, 400 );
         window.setVisible( true );
-        
-        window.addWindowListener(new WindowAdapter() {
+
+        window.addWindowListener( new WindowAdapter() {
             @Override
-            public void windowDestroyed(WindowEvent e) {
+            public void windowDestroyed( WindowEvent e ) {
                 animator.stop();
-                System.exit(1);
+                System.exit( 1 );
             }
-        });
+        } );
     }
 }
