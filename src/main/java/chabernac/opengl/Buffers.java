@@ -16,7 +16,7 @@ public class Buffers implements IOpengGLObject {
     }
 
     @Override
-    public void bind( GL3 gl ) {
+    public Buffers bind( GL3 gl ) {
         IntBuffer bufferReferences = GLBuffers.newDirectIntBuffer( buffers.size() * 3 );
         gl.glGenBuffers( buffers.size() * 3, bufferReferences );
 
@@ -30,15 +30,18 @@ public class Buffers implements IOpengGLObject {
             buffer.setElementBufferIndex( bufferReferences.get( i * 3 + 2 ) );
             buffer.bind( gl );
         }
+        return this;
     }
 
     @Override
-    public void use( GL3 gl ) {
+    public Buffers use( GL3 gl ) {
         buffers.stream().forEach( buffer -> buffer.use( gl ) );
+        return this;
     }
 
     @Override
-    public void unbind( GL3 gl ) {
+    public Buffers unbind( GL3 gl ) {
         buffers.stream().forEach( buffer -> buffer.unbind( gl ) );
+        return this;
     }
 }
