@@ -11,14 +11,18 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.Animator;
 
+import chabernac.io.ClassPathResource;
 import chabernac.opengl.Buffers;
+import chabernac.opengl.IOpengGLObject;
 import chabernac.opengl.ShaderProgram;
 import chabernac.opengl.ShaderProgram.ShaderType;
 import chabernac.opengl.Shape;
+import chabernac.opengl.Texture;
 
 public class HelloTriangle implements GLEventListener {
-	private ShaderProgram shaderProgram;
-	private Buffers buffers;
+	private ShaderProgram	shaderProgram;
+	private Buffers			buffers;
+	private IOpengGLObject	texture;
 
 	@Override
 	public void display(GLAutoDrawable drawable) {
@@ -30,6 +34,7 @@ public class HelloTriangle implements GLEventListener {
 
 		gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
 		shaderProgram.use();
+		texture.use(gl);
 		buffers.use(gl);
 		shaderProgram.unUse();
 	}
@@ -48,26 +53,31 @@ public class HelloTriangle implements GLEventListener {
 		gl.glEnable(GL3.GL_DEPTH_TEST);
 
 		buffers = new Buffers()
-				.addBuffer(new Shape(6)
-						.setAttributeLengths(3, 3) //3 floats for position, 3 float for color
-						.setData(new float[] {
-								-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-								0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
-								0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f })
-						.setElements(new short[] { 0, 1, 2 }))
-				.bind(gl);
+		        .addBuffer(new Shape(8)
+		                .setAttributeLengths(3, 3, 2) // 3 floats for position,
+		                                              // 3 float for color, 2
+		                                              // for vertex position
+		                .setData(new float[] {
+		                        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+		                        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+		                        0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.5f, 1f })
+		                .setElements(new short[] { 0, 1, 2 }))
+		        .bind(gl);
 
 		shaderProgram = new ShaderProgram(gl)
-				.addShader(
-						getClass().getResourceAsStream("/shaders/hello-triangle.vert"),
-						ShaderType.VERTEX,
-						"vertexShader")
-				.addShader(
-						getClass().getResourceAsStream("/shaders/hello-triangle.frag"),
-						ShaderType.FRAGMENT,
-						"fragmentShader")
-				.attachAllShaders()
-				.use();
+		        .addShader(
+		                getClass().getResourceAsStream("/shaders/hello-triangle.vert"),
+		                ShaderType.VERTEX,
+		                "vertexShader")
+		        .addShader(
+		                getClass().getResourceAsStream("/shaders/hello-triangle.frag"),
+		                ShaderType.FRAGMENT,
+		                "fragmentShader")
+		        .attachAllShaders()
+		        .use();
+
+		texture = new Texture(new ClassPathResource("/wall.jpg"))
+		        .bind(gl);
 	}
 
 	@Override
