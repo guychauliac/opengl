@@ -12,103 +12,122 @@ import java.util.Map;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 
+import glm.mat._4.Mat4;
+
 public class ShaderProgram {
-    public static enum ShaderType {
-            VERTEX( GL3.GL_VERTEX_SHADER ),
-            FRAGMENT( GL3.GL_FRAGMENT_SHADER );
+	public static enum ShaderType {
+		VERTEX(GL3.GL_VERTEX_SHADER), FRAGMENT(GL3.GL_FRAGMENT_SHADER);
 
-        private final int glType;
+		private final int glType;
 
-        private ShaderType( int glType ) {
-            this.glType = glType;
-        }
+		private ShaderType(int glType) {
+			this.glType = glType;
+		}
 
-        public int getGlType() {
-            return glType;
-        }
-    }
+		public int getGlType() {
+			return glType;
+		}
+	}
 
-    private final GL3                  gl;
-    private final Map<String, Integer> shaders = new HashMap<>();
-    private final int                  shaderProgram;
+	private final GL3					gl;
+	private final Map<String, Integer>	shaders	= new HashMap<>();
+	private final int					shaderProgram;
+	private boolean						inUse	= false;
 
-    public ShaderProgram( GL3 gl ) {
-        super();
-        this.gl = gl;
-        this.shaderProgram = gl.glCreateProgram();
-    }
+	public ShaderProgram(GL3 gl) {
+		super();
+		this.gl = gl;
+		this.shaderProgram = gl.glCreateProgram();
+	}
 
-    public ShaderProgram addShader( InputStream aShaderStream, ShaderType aShaderType, String aShaderName ) {
-        if ( aShaderStream == null ) {
-            throw new NullPointerException( "Shader stream must not be null" );
-        }
-        int shaderReference = gl.glCreateShader( aShaderType.getGlType() );
+	public ShaderProgram addShader(InputStream aShaderStream, ShaderType aShaderType, String aShaderName) {
+		if (aShaderStream == null) {
+			throw new NullPointerException("Shader stream must not be null");
+		}
+		int shaderReference = gl.glCreateShader(aShaderType.getGlType());
 
-        try (BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( aShaderStream ) )) {
-            String shaderSource = "";
-            String line;
-            while ( ( line = bufferedReader.readLine() ) != null ) {
-                shaderSource += line + "\n";
-            }
-            gl.glShaderSource( shaderReference, 1, new String[] { shaderSource }, (int[]) null, 0 );
-            gl.glCompileShader( shaderReference );
-        } catch ( IOException e ) {
-            throw new RuntimeException( "Could not load shader", e );
-        }
+		try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(aShaderStream))) {
+			String shaderSource = "";
+			String line;
+			while ((line = bufferedReader.readLine()) != null) {
+				shaderSource += line + "\n";
+			}
+			gl.glShaderSource(shaderReference, 1, new String[] { shaderSource }, (int[]) null, 0);
+			gl.glCompileShader(shaderReference);
+		} catch (IOException e) {
+			throw new RuntimeException("Could not load shader", e);
+		}
 
-        shaders.put( aShaderName, shaderReference );
-        return this;
-    }
+		shaders.put(aShaderName, shaderReference);
+		return this;
+	}
 
-    public ShaderProgram attachAllShaders() {
-        shaders.values().stream().forEach( shaderReference -> attachShader( shaderReference ) );
+	public ShaderProgram attachAllShaders() {
+		shaders.values().stream().forEach(shaderReference -> attachShader(shaderReference));
 
-        gl.glLinkProgram( shaderProgram );
+		gl.glLinkProgram(shaderProgram);
 
-        IntBuffer status = GLBuffers.newDirectIntBuffer( 1 );
-        gl.glGetProgramiv( shaderProgram, GL3.GL_LINK_STATUS, status );
-        if ( status.get( 0 ) == GL3.GL_FALSE ) {
+		IntBuffer status = GLBuffers.newDirectIntBuffer(1);
+		gl.glGetProgramiv(shaderProgram, GL3.GL_LINK_STATUS, status);
+		if (status.get(0) == GL3.GL_FALSE) {
 
-            IntBuffer infoLogLength = GLBuffers.newDirectIntBuffer( 1 );
-            gl.glGetProgramiv( shaderProgram, GL3.GL_INFO_LOG_LENGTH, infoLogLength );
+			IntBuffer infoLogLength = GLBuffers.newDirectIntBuffer(1);
+			gl.glGetProgramiv(shaderProgram, GL3.GL_INFO_LOG_LENGTH, infoLogLength);
 
-            ByteBuffer bufferInfoLog = GLBuffers.newDirectByteBuffer( infoLogLength.get( 0 ) );
-            gl.glGetProgramInfoLog( shaderProgram, infoLogLength.get( 0 ), null, bufferInfoLog );
-            byte[] bytes = new byte[ infoLogLength.get( 0 ) ];
-            bufferInfoLog.get( bytes );
-            String strInfoLog = new String( bytes );
+			ByteBuffer bufferInfoLog = GLBuffers.newDirectByteBuffer(infoLogLength.get(0));
+			gl.glGetProgramInfoLog(shaderProgram, infoLogLength.get(0), null, bufferInfoLog);
+			byte[] bytes = new byte[infoLogLength.get(0)];
+			bufferInfoLog.get(bytes);
+			String strInfoLog = new String(bytes);
 
-            System.err.println( "Linker failure: " + strInfoLog );
+			System.err.println("Linker failure: " + strInfoLog);
 
-            // destroyBuffers(infoLogLength, bufferInfoLog);
-        }
+			// destroyBuffers(infoLogLength, bufferInfoLog);
+		}
 
-        gl.glValidateProgram( shaderProgram );
-        shaders.values().stream().forEach( shaderReference -> gl.glDetachShader( shaderProgram, shaderReference ) );
+		gl.glValidateProgram(shaderProgram);
+		shaders.values().stream().forEach(shaderReference -> gl.glDetachShader(shaderProgram, shaderReference));
 
-        // destroyBuffer(status);
+		// destroyBuffer(status);
 
-        return this;
-    }
+		return this;
+	}
 
-    private void attachShader( Integer shaderReference ) {
-        gl.glAttachShader( shaderProgram, shaderReference );
-    }
+	private void attachShader(Integer shaderReference) {
+		gl.glAttachShader(shaderProgram, shaderReference);
+	}
 
-    public ShaderProgram use() {
-        gl.glUseProgram( shaderProgram );
-        return this;
-    }
+	public ShaderProgram use() {
+		gl.glUseProgram(shaderProgram);
+		inUse = true;
+		return this;
+	}
 
-    public ShaderProgram uniform( String variable, float... floats ) {
-        int index = gl.glGetUniformLocation( shaderProgram, variable );
-        if ( floats.length == 4 ) {
-            gl.glUniform4f( index, floats[ 0 ], floats[ 1 ], floats[ 2 ], floats[ 3 ] );
-        }
-        return this;
-    }
+	public void unUse() {
+		gl.glUseProgram(0);
+		inUse = false;
+	}
 
-    public void unUse() {
-        gl.glUseProgram( 0 );
-    }
+	private int getUniformIndex(String variable) {
+		if (!inUse) {
+			throw new UnsupportedOperationException("Can only attach a uniform when the shader program is in use, first call use() on the shaderprogram");
+		}
+		int index = gl.glGetUniformLocation(shaderProgram, variable);
+		if (index == -1) {
+			throw new IllegalArgumentException("'" + variable + "' does not correspond to a uniform variable in the shaders");
+		}
+		return index;
+	}
+
+	public ShaderProgram uniform(String variable, float... floats) {
+		if (floats.length == 4) {
+			gl.glUniform4f(getUniformIndex(variable), floats[0], floats[1], floats[2], floats[3]);
+		}
+		return this;
+	}
+
+	public ShaderProgram uniform(String variable, Mat4 model) {
+		gl.glUniformMatrix4fv(getUniformIndex(variable), 1, false, model.toFa_(), 0);
+		return this;
+	}
 }

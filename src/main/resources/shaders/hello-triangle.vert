@@ -6,9 +6,11 @@ layout (location = 2) in vec2 aTextureCoord;
 out vec3 fragmentColor;
 out vec2 textureCoord;
 
+uniform mat4 model;
+
 void main()
 {
-    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+    gl_Position = model * vec4(aPos, 1.0);
     fragmentColor = color;
     textureCoord = aTextureCoord;
 }

@@ -18,6 +18,8 @@ import chabernac.opengl.ShaderProgram;
 import chabernac.opengl.ShaderProgram.ShaderType;
 import chabernac.opengl.Shape;
 import chabernac.opengl.Texture;
+import glm.mat._4.Mat4;
+import glm.vec._3.Vec3;
 
 public class HelloTriangle implements GLEventListener {
 	private ShaderProgram	shaderProgram;
@@ -48,6 +50,8 @@ public class HelloTriangle implements GLEventListener {
 	public void init(GLAutoDrawable arg0) {
 		GL4 gl = arg0.getGL().getGL4();
 
+		Mat4 model = new Mat4(1.0f).rotate(90, new Vec3(0,0,1));
+
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 1f);
 		gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
 		gl.glEnable(GL3.GL_DEPTH_TEST);
@@ -74,7 +78,9 @@ public class HelloTriangle implements GLEventListener {
 		                ShaderType.FRAGMENT,
 		                "fragmentShader")
 		        .attachAllShaders()
-		        .use();
+		        .use()
+		        .uniform("model", model)
+		        ;
 
 		texture = new Texture(new ClassPathResource("/wall.jpg"))
 		        .bind(gl);
