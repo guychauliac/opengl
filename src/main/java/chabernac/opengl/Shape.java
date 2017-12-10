@@ -7,7 +7,7 @@ import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 
-public class Shape implements IOpenGLBuffer {
+public class Shape implements IOpenGLShape {
 	private final int	stride;
 	private float[]		data;
 	private short[]		elements;

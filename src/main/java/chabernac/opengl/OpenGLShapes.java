@@ -7,16 +7,16 @@ import java.util.List;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.GLBuffers;
 
-public class Buffers implements IOpengGLObject {
-    private final List<IOpenGLBuffer> buffers = new ArrayList<>();
+public class OpenGLShapes implements IOpengGLObject {
+    private final List<IOpenGLShape> buffers = new ArrayList<>();
 
-    public Buffers addBuffer( IOpenGLBuffer aBuffer ) {
+    public OpenGLShapes addBuffer( IOpenGLShape aBuffer ) {
         buffers.add( aBuffer );
         return this;
     }
 
     @Override
-    public Buffers bind( GL3 gl ) {
+    public OpenGLShapes bind( GL3 gl ) {
         IntBuffer bufferReferences = GLBuffers.newDirectIntBuffer( buffers.size() * 3 );
         gl.glGenBuffers( buffers.size() * 3, bufferReferences );
 
@@ -24,7 +24,7 @@ public class Buffers implements IOpengGLObject {
         // gl.glGenVertexArrays( buffers.size(), vertexArrayReferences );
 
         for ( int i = 0; i < buffers.size(); i++ ) {
-            IOpenGLBuffer buffer = buffers.get( i );
+            IOpenGLShape buffer = buffers.get( i );
             buffer.setVertexBufferIndex( bufferReferences.get( i * 3 + 0 ) );
             buffer.setVertexArrayIndex( bufferReferences.get( i * 3 + 1 ) );
             buffer.setElementBufferIndex( bufferReferences.get( i * 3 + 2 ) );
@@ -34,13 +34,13 @@ public class Buffers implements IOpengGLObject {
     }
 
     @Override
-    public Buffers use( GL3 gl ) {
+    public OpenGLShapes use( GL3 gl ) {
         buffers.stream().forEach( buffer -> buffer.use( gl ) );
         return this;
     }
 
     @Override
-    public Buffers unbind( GL3 gl ) {
+    public OpenGLShapes unbind( GL3 gl ) {
         buffers.stream().forEach( buffer -> buffer.unbind( gl ) );
         return this;
     }
