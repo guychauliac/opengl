@@ -1,5 +1,7 @@
 package chabernac.opengl.test;
 
+import com.jogamp.newt.event.KeyEvent;
+import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.WindowAdapter;
 import com.jogamp.newt.event.WindowEvent;
 import com.jogamp.newt.opengl.GLWindow;
@@ -22,13 +24,13 @@ import glm.Glm;
 import glm.mat._4.Mat4;
 import glm.vec._3.Vec3;
 
-public class HelloTriangle implements GLEventListener {
+public class HelloTriangle implements GLEventListener, KeyListener {
   private ShaderProgram  shaderProgram;
   private OpenGLShapes   shapes;
   private IOpengGLObject texture;
   private final long     startTime  = System.currentTimeMillis();
   private Mat4           projection = Glm.perspective_((float) Math.PI / 4, 1.0f, 0.1f, 5000f);
-  private final Mat4     view       = new Mat4(1.0f).translate(0, 0, -400.0f);
+  private Mat4           view       = new Mat4(1.0f).translate(0, 0, -400.0f);
 
   @Override
   public void display(GLAutoDrawable drawable) {
@@ -44,6 +46,7 @@ public class HelloTriangle implements GLEventListener {
     Mat4 model = new Mat4(1.0f).rotate(((float) (System.currentTimeMillis() - startTime)) / 1000f, new Vec3(0, 0, 1));
     shaderProgram.uniform("model", model);
     shaderProgram.uniform("projection", projection);
+    shaderProgram.uniform("view", view);
     texture.use(gl);
     shapes.use(gl);
     shaderProgram.unUse();
@@ -113,6 +116,7 @@ public class HelloTriangle implements GLEventListener {
     window.setSize(400, 400);
     window.setResizable(true);
     window.setVisible(true);
+    window.addKeyListener(helloTriangle);
 
     window.addWindowListener(new WindowAdapter() {
       @Override
@@ -121,5 +125,19 @@ public class HelloTriangle implements GLEventListener {
         System.exit(1);
       }
     });
+  }
+
+  @Override
+  public void keyPressed(KeyEvent e) {
+
+  }
+
+  @Override
+  public void keyReleased(KeyEvent e) {
+    if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+      view = view.rotate((float)(Math.PI / 180), 1f, 0f, 0f);
+    } else if (e.getKeyCode() == KeyEvent.VK_UP) {
+      view = view.rotate((float)(-Math.PI / 180), 1f, 0f, 0f);
+    }
   }
 }
