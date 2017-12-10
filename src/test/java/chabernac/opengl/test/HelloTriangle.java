@@ -18,6 +18,7 @@ import chabernac.opengl.ShaderProgram;
 import chabernac.opengl.ShaderProgram.ShaderType;
 import chabernac.opengl.Shape;
 import chabernac.opengl.Texture;
+import glm.Glm;
 import glm.mat._4.Mat4;
 import glm.vec._3.Vec3;
 
@@ -25,7 +26,9 @@ public class HelloTriangle implements GLEventListener {
   private ShaderProgram  shaderProgram;
   private OpenGLShapes   shapes;
   private IOpengGLObject texture;
-  private final long     startTime = System.currentTimeMillis();
+  private final long     startTime  = System.currentTimeMillis();
+  private Mat4           projection = Glm.perspective_((float) Math.PI / 4, 1.0f, 0.1f, 5000f);
+  private final Mat4     view       = new Mat4(1.0f).translate(0, 0, -400.0f);
 
   @Override
   public void display(GLAutoDrawable drawable) {
@@ -33,12 +36,14 @@ public class HelloTriangle implements GLEventListener {
   }
 
   private void draw(GLAutoDrawable drawable) {
+
     GL3 gl = drawable.getGL().getGL3();
     gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
 
     shaderProgram.use();
     Mat4 model = new Mat4(1.0f).rotate(((float) (System.currentTimeMillis() - startTime)) / 1000f, new Vec3(0, 0, 1));
     shaderProgram.uniform("model", model);
+    shaderProgram.uniform("projection", projection);
     texture.use(gl);
     shapes.use(gl);
     shaderProgram.unUse();
@@ -64,9 +69,9 @@ public class HelloTriangle implements GLEventListener {
                                               // 3 float for color, 2
                                               // for vertex position
                 .setData(new float[] {
-                    -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-                    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-                    0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.5f, 1f })
+                    -200f, -200f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+                    200f, -200f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+                    0.0f, 200f, 0.0f, 0.0f, 0.0f, 1.0f, 0.5f, 1f })
                 .setElements(new short[] { 0, 1, 2 }))
         .bind(gl);
 
@@ -80,15 +85,17 @@ public class HelloTriangle implements GLEventListener {
             ShaderType.FRAGMENT,
             "fragmentShader")
         .attachAllShaders()
-        .use();
+        .use()
+        .uniform("view", view)
+        .uniform("projection", projection);
 
     texture = new Texture(new ClassPathResource("/textures/wall.jpg"))
-    .bind(gl);
+        .bind(gl);
   }
 
   @Override
-  public void reshape(GLAutoDrawable arg0, int arg1, int arg2, int arg3, int arg4) {
-    // method body
+  public void reshape(GLAutoDrawable arg0, int arg1, int arg2, int width, int height) {
+    projection = Glm.perspective_((float) Math.PI / 4, (float) width / (float) height, 0.1f, 1000f);
   }
 
   public static void main(String[] args) {
@@ -104,6 +111,7 @@ public class HelloTriangle implements GLEventListener {
     HelloTriangle helloTriangle = new HelloTriangle();
     window.addGLEventListener(helloTriangle);
     window.setSize(400, 400);
+    window.setResizable(true);
     window.setVisible(true);
 
     window.addWindowListener(new WindowAdapter() {
